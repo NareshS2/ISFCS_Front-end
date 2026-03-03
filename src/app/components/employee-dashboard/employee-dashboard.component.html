@@ -1,0 +1,124 @@
+<div class="min-h-screen bg-slate-50">
+  <header class="bg-white border-b border-gray-200 px-6 py-3 flex justify-between items-center sticky top-0 z-10">
+    <div class="flex items-center gap-2">
+      <div class="bg-indigo-600 p-1.5 rounded-lg">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="font-bold text-lg leading-tight">SurveyTrack</h1>
+        <p class="text-xs text-gray-500">Internal Survey System</p>
+      </div>
+    </div>
+    
+    <div class="flex items-center gap-6">
+      <button class="relative text-gray-400 hover:text-gray-600">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
+        <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 border-2 border-white"></span>
+      </button>
+      <div class="flex items-center gap-3">
+        <div class="text-right">
+          <p class="text-sm font-bold">{{user().fullName}}</p>
+          <p class="text-xs text-gray-500">{{user().role}}</p>
+        </div>
+        <div class="h-10 w-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
+          JE
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto p-8">
+    <div class="mb-8">
+      <h2 class="text-3xl font-bold text-gray-900">Welcome back, {{user().name}}!</h2>
+      <p class="text-gray-500">{{user().department}} • {{user().role}}</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+      <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+        <div class="flex justify-between items-start mb-4">
+          <h3 class="font-bold text-gray-800">Pending Surveys</h3>
+          <span class="text-gray-400 text-xl">📋</span>
+        </div>
+        <p class="text-4xl font-bold mb-1">{{pendingSurveys().length}}</p>
+        <p class="text-sm text-gray-500">awaiting your response</p>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+        <div class="flex justify-between items-start mb-4">
+          <h3 class="font-bold text-gray-800">Completed</h3>
+          <span class="text-gray-400 text-xl">✅</span>
+        </div>
+        <p class="text-4xl font-bold mb-1">{{completedSurveys().length}}</p>
+        <p class="text-sm text-gray-500">surveys finished</p>
+      </div>
+
+      <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+        <div class="flex justify-between items-start mb-4">
+          <h3 class="font-bold text-gray-800">Completion Rate</h3>
+          <span class="h-2 w-2 rounded-full bg-green-500"></span>
+        </div>
+        <p class="text-4xl font-bold mb-4">50%</p>
+        <div class="w-full bg-gray-200 rounded-full h-2">
+          <div class="bg-black h-2 rounded-full" style="width: 50%"></div>
+        </div>
+      </div>
+    </div>
+
+    <section class="mb-10">
+      <h3 class="text-lg font-bold mb-1">Surveys Awaiting Your Response</h3>
+      <p class="text-gray-500 text-sm mb-4">Complete these surveys to share your valuable feedback</p>
+      
+      <div class="space-y-4">
+        @for (survey of pendingSurveys(); track survey.id) {
+          <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex justify-between items-center hover:border-gray-300 transition-all">
+            <div>
+              <div class="flex items-center gap-3 mb-2">
+                <h4 class="font-bold text-lg text-gray-900">{{survey.title}}</h4>
+                <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">{{survey.category}}</span>
+              </div>
+              <p class="text-gray-500 text-sm mb-4 max-w-2xl">{{survey.description}}</p>
+              <div class="flex gap-4 text-sm text-gray-400">
+                <span class="flex items-center gap-1">📅 {{survey.daysLeft || 14}} days left</span>
+                <span class="flex items-center gap-1">⏱️ {{survey.questionsCount}} questions</span>
+              </div>
+            </div>
+            <button 
+              (click)="startSurvey(survey.id)"
+              class="bg-black text-white px-6 py-2.5 rounded-lg font-bold hover:bg-gray-800 transition-colors shadow-sm active:scale-95">
+              Start Survey
+            </button>
+          </div>
+        } @empty {
+          <div class="p-12 text-center bg-gray-50 rounded-xl border-2 border-dashed">
+            <p class="text-gray-400 font-medium">All caught up! No pending surveys.</p>
+          </div>
+        }
+      </div>
+    </section>
+
+    <section>
+      <h3 class="text-lg font-bold mb-1">Completed Surveys</h3>
+      <p class="text-gray-500 text-sm mb-4">Thank you for your participation</p>
+      
+      <div class="space-y-3">
+        @for (survey of completedSurveys(); track survey.id) {
+          <div class="bg-emerald-50/50 p-4 rounded-xl border border-emerald-100 flex justify-between items-center">
+            <div>
+              <h4 class="font-bold text-gray-800">{{survey.title}}</h4>
+              <p class="text-xs text-gray-500">Completed {{survey.completedDaysAgo || 0}} days ago</p>
+            </div>
+            <span class="text-emerald-500">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </span>
+          </div>
+        }
+      </div>
+    </section>
+  </main>
+</div>

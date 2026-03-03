@@ -1,0 +1,263 @@
+<div class="min-h-screen bg-slate-50">
+  <header class="bg-white border-b px-8 py-3 flex justify-between items-center sticky top-0 z-10">
+    <div class="flex items-center gap-2">
+      <div class="bg-indigo-600 p-1.5 rounded-lg text-white font-bold">ST</div>
+      <div>
+        <h1 class="font-bold text-lg leading-tight">SurveyTrack</h1>
+        <p class="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Internal System</p>
+      </div>
+    </div>
+    <div (click)="openProfile()" class="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-1.5 rounded-xl transition-all">
+    <div class="text-right">
+      <p class="text-sm font-bold">{{admin().name}}</p>
+      <p class="text-xs text-gray-500">{{admin().role}}</p>
+    </div>
+    <div class="h-10 w-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold border-2 border-white shadow-sm">
+      AA
+    </div>
+  </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto p-8">
+    <div class="flex justify-between items-end mb-8">
+      <div>
+        <h2 class="text-3xl font-bold text-gray-900">Admin Dashboard</h2>
+        <p class="text-gray-500">System configuration and detailed engagement analytics</p>
+      </div>
+      <div class="flex bg-gray-200/50 p-1 rounded-xl gap-1">
+        <button (click)="setView('analytics')" [class.bg-white]="currentView() === 'analytics'" class="px-4 py-2 rounded-lg text-xs font-bold transition-all">📊 Analytics</button>
+        <button (click)="setView('categories')" [class.bg-white]="currentView() === 'categories'" class="px-4 py-2 rounded-lg text-xs font-bold transition-all">⚙️ Categories</button>
+        <button (click)="setView('users')" [class.bg-white]="currentView() === 'users'" class="px-4 py-2 rounded-lg text-xs font-bold transition-all">👥 Users</button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-4 gap-6 mb-8">
+      @for (stat of stats(); track stat.label) {
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+          <div class="flex justify-between items-start mb-4 text-gray-400">
+            <h3 class="text-[10px] font-bold uppercase tracking-wider">{{stat.label}}</h3>
+            <span>{{stat.icon}}</span>
+          </div>
+          <p class="text-3xl font-bold">{{stat.value}}</p>
+          <p class="text-[10px] text-gray-400 mt-1 font-medium">{{stat.subtext}}</p>
+        </div>
+      }
+    </div>
+
+    <div #reportContent>
+      @if (currentView() === 'analytics') {
+        <div class="space-y-6">
+          <div class="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
+            <div class="flex justify-between items-center mb-6">
+              <h3 class="font-bold">Response Trends</h3>
+              <button (click)="downloadReport()" class="text-xs bg-black text-white px-3 py-1.5 rounded-lg">Export PDF</button>
+            </div>
+            <div class="h-72 relative">
+              <canvas #lineChart></canvas>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-2 gap-6">
+            <div class="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
+              <h3 class="font-bold mb-6">Survey Completion Status</h3>
+              <div class="h-64 relative">
+                <canvas #pieChart></canvas>
+              </div>
+            </div>
+            <div class="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
+              <h3 class="font-bold mb-6">User Activity</h3>
+              <div class="space-y-4">
+                <div class="p-4 bg-slate-50 rounded-xl flex justify-between">
+                  <span class="text-sm font-medium">Active Users</span>
+                  <span class="font-bold text-indigo-600">42/50</span>
+                </div>
+                <div class="p-4 bg-slate-50 rounded-xl flex justify-between">
+                  <span class="text-sm font-medium">Surveys Created This Month</span>
+                  <span class="font-bold text-indigo-600">12</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      @else if (currentView() === 'categories') {
+        <div class="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
+          <h3 class="font-bold mb-2">Configure Categories</h3>
+          <p class="text-sm text-gray-400 mb-8">Add or remove survey categories across the platform.</p>
+          <div class="flex gap-4 mb-8">
+            <input type="text" placeholder="New category name..." class="flex-1 bg-gray-50 border-none rounded-xl p-3 text-sm">
+            <button class="bg-black text-white px-6 py-3 rounded-xl font-bold text-sm">Add Category</button>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div *ngFor="let c of ['Engagement', 'Benefits', 'Culture', 'Remote Work']" class="p-4 border rounded-xl flex justify-between items-center">
+              <span class="text-sm font-bold">{{c}}</span>
+              <button class="text-gray-300 hover:text-red-500 transition-colors">🗑️</button>
+            </div>
+          </div>
+        </div>
+      }
+
+      @else if (currentView() === 'users') {
+        <div class="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
+  <div class="flex justify-between items-center mb-6">
+    <div>
+      <h3 class="text-lg font-bold">User Management</h3>
+      <p class="text-sm text-gray-400">Manage access, roles, and departments</p>
+    </div>
+    <button (click)="openAddModal()" class="bg-black text-white px-4 py-2 rounded-lg text-sm font-bold">
+      + Add New User
+    </button>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4 mb-6">
+    <div>
+      <label class="text-[10px] font-bold uppercase text-gray-400 mb-1 block">Filter by Dept</label>
+      <select [ngModel]="selectedDept()" (ngModelChange)="selectedDept.set($event)" class="w-full bg-gray-50 border-none rounded-xl p-3 text-sm">
+        <option value="All">All Departments</option>
+        <option value="Engineering">Engineering</option>
+        <option value="Administration">Administration</option>
+        <option value="Marketing">Marketing</option>
+      </select>
+    </div>
+    <div>
+      <label class="text-[10px] font-bold uppercase text-gray-400 mb-1 block">Filter by Role</label>
+      <select [ngModel]="selectedRole()" (ngModelChange)="selectedRole.set($event)" class="w-full bg-gray-50 border-none rounded-xl p-3 text-sm">
+        <option value="All">All Roles</option>
+        <option value="Employee">Employee</option>
+        <option value="Manager">Manager</option>
+        <option value="Admin">Admin</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="overflow-hidden border border-gray-100 rounded-xl">
+    <table class="w-full text-left text-sm">
+      <thead class="bg-gray-50 text-gray-400 uppercase text-[10px] font-bold">
+        <tr>
+          <th class="px-6 py-4">User</th>
+          <th class="px-6 py-4">Department</th>
+          <th class="px-6 py-4">Role</th>
+          <th class="px-6 py-4 text-right">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        @for (user of filteredUsers(); track user.id) {
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="px-6 py-4">
+              <p class="font-bold text-gray-900">{{user.name}}</p>
+              <p class="text-[11px] text-gray-400">{{user.email}}</p>
+            </td>
+            <td class="px-6 py-4">
+              <span class="px-2 py-1 bg-gray-100 rounded-md text-[11px] font-medium">{{user.dept}}</span>
+            </td>
+            <td class="px-6 py-4">
+              <span class="px-2 py-1 bg-indigo-50 text-indigo-600 rounded-md text-[11px] font-bold">{{user.role}}</span>
+            </td>
+            <td class="px-6 py-4 text-right space-x-2">
+              <button (click)="openEditModal(user)" class="text-gray-400 hover:text-indigo-600">Edit</button>
+              <button (click)="deleteUser(user.id)" class="text-gray-400 hover:text-red-500">Delete</button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>
+
+@if (isUserModalOpen()) {
+  <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl">
+      <h3 class="text-xl font-bold mb-6">{{editingUser()?.id === 0 ? 'Add New User' : 'Edit User'}}</h3>
+      
+      <div class="space-y-4" *ngIf="editingUser() as user">
+        <div>
+          <label class="text-xs font-bold mb-1 block">Full Name</label>
+          <input [(ngModel)]="user.name" type="text" class="w-full bg-gray-50 border-none rounded-xl p-3">
+        </div>
+        <div>
+          <label class="text-xs font-bold mb-1 block">Email</label>
+          <input [(ngModel)]="user.email" type="email" class="w-full bg-gray-50 border-none rounded-xl p-3">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-xs font-bold mb-1 block">Department</label>
+            <select [(ngModel)]="user.dept" class="w-full bg-gray-50 border-none rounded-xl p-3">
+              <option>Engineering</option>
+              <option>Administration</option>
+              <option>Marketing</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-xs font-bold mb-1 block">Role</label>
+            <select [(ngModel)]="user.role" class="w-full bg-gray-50 border-none rounded-xl p-3">
+              <option>Employee</option>
+              <option>Manager</option>
+              <option>Admin</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-3 mt-8">
+        <button (click)="isUserModalOpen.set(false)" class="px-6 py-2 rounded-xl border font-bold">Cancel</button>
+        <button (click)="saveUser()" class="px-6 py-2 bg-black text-white rounded-xl font-bold">Save User</button>
+      </div>
+    </div>
+  </div>
+}
+      }
+    </div>
+  </main>
+@if (isProfileModalOpen()) {
+  <div class="fixed inset-0 bg-black/40 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden">
+      <div class="bg-indigo-600 px-5 py-4 text-white flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 rounded-lg bg-white/20 flex items-center justify-center font-bold">
+            AA
+          </div>
+        </div>
+        <h3 class="text-sm font-bold">{{admin().name}}</h3>
+        <p class="text-[10px] text-white/70 uppercase font-bold tracking-wider">{{admin().role}} • ({{admin().dept}})</p>
+      <button (click)="isProfileModalOpen.set(false)" class="text-white/60 hover:text-white text-xl leading-none">&times;</button>
+      </div>
+
+      <div class="p-5 space-y-4">
+        <div>
+          <h4 class="text-[10px] font-bold uppercase text-gray-400 mb-2">Account Details</h4>
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div>
+              <p class="text-gray-400">Email Address</p>
+              <p class="font-bold">{{admin().email}}</p>
+            </div>
+            <div>
+              <p class="text-gray-400">Department</p>
+              <p class="font-bold">{{admin().dept}}</p>
+            </div>
+          </div>
+        </div>
+
+        <hr class="border-gray-100">
+
+        <div>
+          <h4 class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-4">Change Password</h4>
+          <div class="space-y-3">
+            <input [(ngModel)]="passwordData().current" type="password" placeholder="Current Password" class="w-full bg-gray-50 border-none rounded-xl p-3 text-sm">
+            <input [(ngModel)]="passwordData().new" type="password" placeholder="New Password" class="w-full bg-gray-50 border-none rounded-xl p-3 text-sm">
+            <input [(ngModel)]="passwordData().confirm" type="password" placeholder="Confirm New Password" class="w-full bg-gray-50 border-none rounded-xl p-3 text-sm">
+          </div>
+        </div>
+
+        <div class="flex gap-3 pt-4">
+          <button (click)="logout()" class="px-6 py-3 text-red-500 font-bold text-sm hover:bg-red-50 rounded-xl transition-all">Logout</button>
+          <div class="flex-1 flex gap-3">
+            <button (click)="isProfileModalOpen.set(false)" class="flex-1 py-3 border rounded-xl font-bold text-sm">Cancel</button>
+            <button (click)="updatePassword()" class="flex-1 py-3 bg-black text-white rounded-xl font-bold text-sm">Update</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+</div>

@@ -1,0 +1,103 @@
+<div class="min-h-screen bg-slate-50">
+  <header class="bg-white border-b px-8 py-3 flex justify-between items-center sticky top-0 z-10">
+    <div class="flex items-center gap-2">
+      <div class="bg-indigo-600 p-1.5 rounded-lg text-white">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="font-bold text-lg leading-tight">SurveyTrack</h1>
+        <p class="text-xs text-gray-400 uppercase tracking-tighter">Internal Survey System</p>
+      </div>
+    </div>
+    
+    <div class="flex items-center gap-6">
+      <button class="text-gray-400 relative">
+        <span class="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full border-2 border-white"></span>
+        🔔
+      </button>
+      <div class="flex items-center gap-3">
+        <div class="text-right">
+          <p class="text-sm font-bold">{{manager().name}}</p>
+          <p class="text-xs text-gray-500">{{manager().role}}</p>
+        </div>
+        <div class="h-10 w-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">SM</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto p-8">
+    <div class="flex justify-between items-end mb-8">
+      <div>
+        <h2 class="text-3xl font-bold text-gray-900">Survey Management</h2>
+        <p class="text-gray-500">Create, manage, and analyze your surveys</p>
+      </div>
+      <button (click)="goToCreate()" class="bg-black text-white px-5 py-2.5 rounded-lg font-bold flex items-center gap-2 hover:bg-gray-800 transition-all">
+        <span class="text-xl">+</span> Create Survey
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      @for (stat of stats(); track stat.label) {
+        <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+          <div class="flex justify-between items-start mb-4">
+            <h3 class="text-sm font-bold text-gray-700">{{stat.label}}</h3>
+            <span class="text-gray-300 text-lg">{{stat.icon}}</span>
+          </div>
+          <p class="text-3xl font-bold mb-1">{{stat.value}}</p>
+          <p class="text-xs text-gray-400">{{stat.subtext}}</p>
+        </div>
+      }
+    </div>
+
+    <div class="relative mb-8">
+      <span class="absolute inset-y-0 left-4 flex items-center text-gray-400">🔍</span>
+      <input type="text" placeholder="Search surveys..." 
+        class="w-full bg-gray-100 border-none rounded-xl py-3 pl-12 focus:ring-2 focus:ring-indigo-500 transition-all">
+    </div>
+
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+      <div class="p-6 border-b border-gray-50">
+        <h3 class="font-bold text-gray-900">Your Surveys</h3>
+        <p class="text-xs text-gray-400">Manage and track your survey campaigns</p>
+      </div>
+
+      <div class="divide-y divide-gray-50">
+        @for (survey of allSurveys(); track survey.id) {
+          <div class="p-6 flex justify-between items-center hover:bg-slate-50 transition-colors">
+            <div class="space-y-2">
+              <div class="flex items-center gap-3">
+                <h4 class="font-bold text-lg">{{survey.title}}</h4>
+                <span class="px-2 py-0.5 bg-black text-white text-[10px] font-bold rounded uppercase">active</span>
+                <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-[10px] font-bold rounded uppercase tracking-wide">{{survey.category}}</span>
+              </div>
+              <p class="text-sm text-gray-500">Help us understand your experience and improve our workplace culture.</p>
+              <div class="flex gap-6 text-xs text-gray-400 font-medium">
+                <span class="flex items-center gap-1">👥 0 responses (0%)</span>
+                <span class="flex items-center gap-1">📅 {{survey.daysLeft}} days left</span>
+                <span>Created 9 days ago</span>
+              </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+              <button class="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-bold hover:bg-white transition-all shadow-sm">
+                👁️ View Analytics
+              </button>
+              <button class="p-2 text-gray-400 hover:text-black">⋮</button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </main>
+
+  <footer class="max-w-7xl mx-auto px-8 py-10 flex justify-between text-[11px] text-gray-400 font-medium">
+    <p>© 2026 SurveyTrack. Internal Survey & Feedback Collection System.</p>
+    <div class="flex gap-4">
+      <span>Total Surveys: N/A</span>
+      <span>•</span>
+      <span>Active Users: N/A</span>
+    </div>
+  </footer>
+</div>

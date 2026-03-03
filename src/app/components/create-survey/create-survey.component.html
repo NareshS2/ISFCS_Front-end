@@ -1,0 +1,121 @@
+<div class="min-h-screen bg-slate-50 p-8">
+  <div class="max-w-4xl mx-auto">
+    <button (click)="onCancel()" class="flex items-center gap-2 text-gray-500 hover:text-black mb-6 transition-colors">
+      ← Back to Dashboard
+    </button>
+    
+    <h1 class="text-3xl font-bold mb-2 text-gray-900">Create New Survey</h1>
+    <p class="text-gray-500 mb-8">Build your survey with multiple question types</p>
+
+    <form [formGroup]="surveyForm" (ngSubmit)="onCreateSurvey()">
+      
+      <div class="bg-white rounded-2xl border border-gray-100 p-8 mb-6 shadow-sm">
+        <h2 class="text-sm font-bold uppercase tracking-wider text-gray-400 mb-6">Basic Information</h2>
+        
+        <div class="space-y-6">
+          <div>
+            <label class="block text-sm font-bold mb-2">Survey Title *</label>
+            <input formControlName="title" type="text" 
+              placeholder="e.g., Q1 2026 Employee Engagement Survey" 
+              class="w-full bg-gray-50 border border-gray-100 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all">
+          </div>
+
+          <div>
+            <label class="block text-sm font-bold mb-2">Description</label>
+            <textarea formControlName="description" rows="3" 
+              placeholder="Provide context about this survey..." 
+              class="w-full bg-gray-50 border border-gray-100 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all"></textarea>
+          </div>
+
+          <div class="grid grid-cols-2 gap-6">
+            <div>
+              <label class="block text-sm font-bold mb-2">Category</label>
+              <select formControlName="category" class="w-full bg-gray-50 border border-gray-100 rounded-xl p-3 appearance-none cursor-pointer focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all">
+                <option value="Engagement">Engagement</option>
+                <option value="Work Environment">Work Environment</option>
+                <option value="Benefits">Benefits</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-bold mb-2">Deadline *</label>
+              <input formControlName="deadline" type="date" 
+                class="w-full bg-gray-50 border border-gray-100 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-gray-100 p-8 mb-10 shadow-sm">
+        <div class="flex justify-between items-center mb-8">
+          <h2 class="text-sm font-bold uppercase tracking-wider text-gray-400">Questions</h2>
+          <button type="button" (click)="addQuestion()" 
+            class="bg-black text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-gray-800 transition-colors shadow-sm">
+            + Add Question
+          </button>
+        </div>
+
+        <div formArrayName="questions" class="space-y-6">
+          @for (q of questions.controls; track $index) {
+            <div [formGroupName]="$index" class="p-6 border border-gray-100 rounded-xl bg-slate-50 relative group">
+              
+              <div class="flex items-center gap-4 mb-4">
+                <span class="text-gray-300 cursor-move">:::</span>
+                <p class="font-bold text-gray-700">Question {{$index + 1}}</p>
+                <button type="button" (click)="removeQuestion($index)" 
+                  class="ml-auto text-red-400 hover:text-red-600 text-sm font-medium transition-colors">
+                  Remove
+                </button>
+              </div>
+
+              <input formControlName="text" type="text" 
+                placeholder="Enter your question text here..." 
+                class="w-full bg-white border border-gray-200 rounded-lg p-3 mb-4 focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+
+              <div class="flex flex-wrap items-center gap-6">
+                <div class="flex-1 min-w-[200px]">
+                  <label class="text-xs font-bold text-gray-400 uppercase block mb-1">Question Type</label>
+                  <div class="relative">
+                    <select formControlName="type" 
+                      class="w-full bg-white border border-gray-200 rounded-lg p-3 appearance-none cursor-pointer focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
+                      <option value="Text Response">Text Response</option>
+                      <option value="Multiple Choice">Multiple Choice</option>
+                      <option value="Rating (1-5)">Rating (1-5)</option>
+                      <option value="Scale (1-10)">Scale (1-10)</option>
+                      <option value="Yes/No">Yes/No</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
+                      ▼
+                    </div>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2 mt-4">
+                  <input type="checkbox" formControlName="required" id="req-{{$index}}" 
+                    class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                  <label [for]="'req-' + $index" class="text-sm font-bold text-gray-600 cursor-pointer">Required</label>
+                </div>
+              </div>
+            </div>
+          } @empty {
+            <div class="text-center py-10 border-2 border-dashed border-gray-200 rounded-xl">
+              <p class="text-gray-400">No questions added yet. Click "+ Add Question" to start building.</p>
+            </div>
+          }
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-4">
+        <button type="button" (click)="onCancel()" 
+          class="px-8 py-3 rounded-xl border border-gray-200 font-bold hover:bg-gray-50 transition-colors">
+          Cancel
+        </button>
+        <button type="submit" 
+          [disabled]="surveyForm.invalid || questions.length === 0"
+          [class.opacity-50]="surveyForm.invalid || questions.length === 0"
+          class="px-8 py-3 bg-black text-white rounded-xl font-bold hover:bg-gray-800 transition-all shadow-lg active:scale-95">
+          Create Survey
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
