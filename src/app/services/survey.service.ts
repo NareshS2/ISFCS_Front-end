@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, computed } from '@angular/core';
 
 export interface Survey {
   id: number;
@@ -9,6 +9,8 @@ export interface Survey {
   questionsCount: number;
   completed: boolean;
   completedDaysAgo?: number;
+  status: 'pending' | 'approved' | 'rejected'; // New status field
+  createdBy?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -22,7 +24,8 @@ export class SurveyService {
       description: 'Help us understand your experience and improve our workplace culture.',
       daysLeft: 7,
       questionsCount: 4,
-      completed: false
+      completed: false,
+      status: 'approved'
     },
     {
       id: 101,
@@ -31,31 +34,43 @@ export class SurveyService {
       description: 'Feedback on home office setup.',
       questionsCount: 5,
       completed: true,
-      completedDaysAgo: 2
+      completedDaysAgo: 2,
+      status: 'approved'
     }
   ]);
 
   // Read-only signals for the components
   surveys = this.surveysList.asReadonly();
 
+  // Filtered lists for the dashboards
+  approvedSurveys = computed(() => this.surveysList().filter(s => s.status === 'approved'));
+  pendingSurveys = computed(() => this.surveysList().filter(s => s.status === 'pending'));
+
   completeSurvey(id: number) {
-    this.surveysList.update(all => all.map(s => 
+    this.surveysList.update(all => all.map(s =>
       s.id === id ? { ...s, completed: true, completedDaysAgo: 0 } : s
     ));
   }
 
   addSurvey(newSurveyData: any) {
-  const survey: Survey = {
-    id: Math.floor(Math.random() * 1000), // Generate a random ID
-    title: newSurveyData.title,
-    category: newSurveyData.category,
-    description: newSurveyData.description,
-    daysLeft: 14, // Default for new surveys
-    questionsCount: newSurveyData.questions.length,
-    completed: false
-  };
+    const survey: Survey = {
+      id: Date.now(), // Generate a random ID
+      title: newSurveyData.title,
+      category: newSurveyData.category,
+      description: newSurveyData.description,
+      daysLeft: 14, // Default for new surveys
+      questionsCount: newSurveyData.questions.length,
+      completed: false,
+      status: 'pending'
+    };
 
-  this.surveysList.update(all => [survey, ...all]);
-}
+    this.surveysList.update(all => [survey, ...all]);
+  }
+
+  updateStatus(id: number, status: 'approved' | 'rejected') {
+    this.surveysList.update(all => all.map(s =>
+      s.id === id ? { ...s, status } : s
+    ));
+  }
 
 }

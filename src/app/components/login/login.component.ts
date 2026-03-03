@@ -21,18 +21,18 @@ export class LoginComponent {
   }
 
   onSubmit() {
-  if (this.loginForm.valid) {
-    const email = this.loginForm.value.email;
-    
-    if (email.includes('manager')) {
-      this.router.navigate(['/manager-dashboard']); // Points to the new route
-    }
-    else if (email.includes('admin')) {
-      this.router.navigate(['/admin-dashboard']); // Points to the new route
-    }
-    else {
-      this.router.navigate(['/dashboard']);
+    if (this.loginForm.valid) {
+      const email = this.loginForm.value.email;
+
+      if (email.includes('manager')) {
+        this.router.navigate(['/manager-dashboard']); // Points to the new route
+      }
+      else if (email.includes('admin')) {
+        this.router.navigate(['/admin-dashboard']); // Points to the new route
+      }
+      else {
+        this.router.navigate(['/dashboard']);
+      }
     }
   }
-}
 }

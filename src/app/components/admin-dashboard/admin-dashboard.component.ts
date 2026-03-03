@@ -1,7 +1,8 @@
-import { Component, signal, ElementRef, ViewChild, AfterViewInit, computed , inject } from '@angular/core';
+import { Component, signal, ElementRef, ViewChild, AfterViewInit, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import jsPDF from 'jspdf';
+import { SurveyService } from '../../services/survey.service';
 import html2canvas from 'html2canvas';
 import { Chart, registerables } from 'chart.js';
 
@@ -27,9 +28,9 @@ export class AdminDashboardComponent implements AfterViewInit {
   @ViewChild('lineChart') lineChartCanvas!: ElementRef;
   @ViewChild('pieChart') pieChartCanvas!: ElementRef;
 
-  admin = signal({ 
-    name: 'Alex Admin', 
-    role: 'Admin', 
+  admin = signal({
+    name: 'Alex Admin',
+    role: 'Admin',
     email: 'admin@surveytrack.com',
     dept: 'Administration'
   });
@@ -47,7 +48,7 @@ export class AdminDashboardComponent implements AfterViewInit {
 
   updatePassword() {
     const { new: newPass, confirm } = this.passwordData();
-    
+
     if (newPass !== confirm) {
       alert("New passwords do not match!");
       return;
@@ -67,11 +68,24 @@ export class AdminDashboardComponent implements AfterViewInit {
 
   logout() {
     // Add your logout redirection logic here
-    window.location.href = '/'; 
+    window.location.href = '/';
   }
-  
-  currentView = signal<'analytics' | 'categories' | 'users'>('analytics');
-  
+
+  currentView = signal<'analytics' | 'users' | 'approvals'>('analytics');
+
+  private surveyService = inject(SurveyService);
+  pendingSurveys = this.surveyService.pendingSurveys;
+
+  approveSurvey(id: number) {
+    this.surveyService.updateStatus(id, 'approved');
+  }
+
+  rejectSurvey(id: number) {
+    if (confirm('Are you sure you want to reject this survey?')) {
+      this.surveyService.updateStatus(id, 'rejected');
+    }
+  }
+
   // User Management State
   usersList = signal<User[]>([
     { id: 1, name: 'John Employee', email: 'john@company.com', dept: 'Engineering', role: 'Employee' },
@@ -91,7 +105,7 @@ export class AdminDashboardComponent implements AfterViewInit {
       return matchDept && matchRole;
     });
   });
-  
+
   // Modal State
   isUserModalOpen = signal(false);
   editingUser = signal<User | null>(null);
@@ -142,7 +156,7 @@ export class AdminDashboardComponent implements AfterViewInit {
     this.initCharts();
   }
 
-  setView(view: 'analytics' | 'categories' | 'users') {
+  setView(view: 'analytics' | 'users' | 'approvals') {
     this.currentView.set(view);
     if (view === 'analytics') {
       // Small timeout to allow DOM to render the canvas elements
@@ -195,12 +209,12 @@ export class AdminDashboardComponent implements AfterViewInit {
     const element = this.reportContent.nativeElement;
     const canvas = await html2canvas(element, { scale: 2 });
     const imgData = canvas.toDataURL('image/png');
-    
+
     const pdf = new jsPDF('p', 'mm', 'a4');
     const imgProps = pdf.getImageProperties(imgData);
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-    
+
     pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
     pdf.save('Admin-Analytics-Report.pdf');
   }

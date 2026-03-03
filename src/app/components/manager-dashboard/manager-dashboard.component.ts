@@ -11,7 +11,7 @@ import { Router } from '@angular/router'; // Add this import
 })
 export class ManagerDashboardComponent { // Renamed class
   private surveyService = inject(SurveyService);
-    private router = inject(Router);
+  private router = inject(Router);
   manager = signal({
     name: 'Sarah Manager',
     role: 'manager'

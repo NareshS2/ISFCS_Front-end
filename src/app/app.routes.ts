@@ -9,10 +9,10 @@ import { AdminDashboardComponent } from './components/admin-dashboard/admin-dash
 export const routes: Routes = [
   // 1. Default path shows Login
   { path: '', component: LoginComponent },
-  
+
   // 2. Dashboard path
   { path: 'dashboard', component: EmployeeDashboardComponent },
-  
+
   { path: 'manager-dashboard', component: ManagerDashboardComponent }, // Route name
 
   { path: 'create-survey', component: CreateSurveyComponent },

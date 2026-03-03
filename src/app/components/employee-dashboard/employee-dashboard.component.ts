@@ -26,14 +26,14 @@ export class EmployeeDashboardComponent {
    * Whenever the Service updates (like when a manager creates a survey),
    * these lists will update here automatically.
    */
-  
+
   // Surveys that are NOT completed
-  pendingSurveys = computed(() => 
+  pendingSurveys = computed(() =>
     this.surveyService.surveys().filter(s => !s.completed)
   );
 
   // Surveys that ARE completed
-  completedSurveys = computed(() => 
+  completedSurveys = computed(() =>
     this.surveyService.surveys().filter(s => s.completed)
   );
 
