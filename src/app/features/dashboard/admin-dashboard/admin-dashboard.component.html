@@ -1,0 +1,275 @@
+<div class="admin-dashboard">
+  <!-- Header -->
+  <header class="dashboard-header">
+    <div class="header-content">
+      <div class="logo-section">
+        <h1 class="logo">⚙️ Survey Track</h1>
+      </div>
+
+      <div class="header-actions">
+        <!-- Notifications Bell -->
+        <div class="notification-icon" (click)="toggleNotifications()">
+          <span class="bell-icon">🔔</span>
+          <span class="notification-badge" *ngIf="notificationCount > 0">{{ notificationCount }}</span>
+
+          <!-- Notification Panel -->
+          <div class="notification-panel" *ngIf="showNotificationPanel">
+            <div class="panel-header">Notifications</div>
+            <div class="notification-list" *ngIf="notifications.length > 0">
+              <div class="notification-item" *ngFor="let notif of notifications">
+                <p>{{ notif.message }}</p>
+              </div>
+            </div>
+            <div class="empty-state" *ngIf="notifications.length === 0">
+              <p>No notifications</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Profile Circle -->
+        <div class="profile-circle" (click)="toggleProfileMenu()">
+          {{ getInitials() }}
+
+          <!-- Profile Menu -->
+          <div class="profile-menu" *ngIf="showProfileMenu">
+            <div class="menu-header">
+              <p class="admin-name">{{ adminName }}</p>
+              <p class="admin-email">{{ adminDepartment }}</p>
+            </div>
+            <div class="menu-divider"></div>
+            <button class="menu-item logout-btn" (click)="logout()">
+              🚪 Logout
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="dashboard-content">
+    <!-- Admin Dashboard Section -->
+    <section class="admin-section">
+      <div class="section-header">
+        <div class="section-info">
+          <h2 class="section-title">Admin Dashboard</h2>
+          <p class="section-subtitle">Manage system configuration and view engagement reports</p>
+        </div>
+      </div>
+
+      <!-- Toggle Bar -->
+      <div class="toggle-bar">
+        <button
+          class="toggle-btn"
+          [class.active]="activeTab === 'surveys'"
+          (click)="switchTab('surveys')"
+        >
+          📊 Surveys
+        </button>
+        <button
+          class="toggle-btn"
+          [class.active]="activeTab === 'users'"
+          (click)="switchTab('users')"
+        >
+          👥 Users
+        </button>
+      </div>
+
+      <!-- Error Message -->
+      <div *ngIf="error" class="error-message">
+        <p>{{ error }}</p>
+      </div>
+
+      <!-- ============= SURVEYS TAB ============= -->
+      <div class="tab-content" *ngIf="activeTab === 'surveys'">
+        <!-- Search Bar for Surveys -->
+        <div class="search-container">
+          <input
+            type="text"
+            class="search-bar"
+            placeholder="Search surveys by title, description, or creator name..."
+            [(ngModel)]="surveysSearchQuery"
+            (input)="searchSurveys()"
+          />
+          <span class="search-icon">🔍</span>
+        </div>
+
+        <!-- Active & Approved Surveys -->
+        <div class="surveys-section">
+          <div class="surveys-header">
+            <h3 class="surveys-title">✅ Approved & Active Surveys</h3>
+          </div>
+
+          <div class="surveys-list" *ngIf="filteredApprovedSurveys.length > 0">
+            <div
+              class="survey-item"
+              *ngFor="let survey of filteredApprovedSurveys"
+              (click)="openSurveyDetail(survey)"
+            >
+              <div class="survey-main">
+                <h4 class="survey-name">{{ survey.title }}</h4>
+                <p class="survey-manager">👤 Created by: {{ survey.createdBy.name }}</p>
+              </div>
+              <div class="survey-meta">
+                <span class="response-badge">📊 {{ survey.questions.length }} questions</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="empty-state" *ngIf="filteredApprovedSurveys.length === 0">
+            <p>No active surveys</p>
+          </div>
+        </div>
+
+        <!-- Pending Approval Surveys -->
+        <div class="surveys-section pending">
+          <div class="surveys-header">
+            <h3 class="surveys-title warning">⏳ Pending Approval</h3>
+          </div>
+
+          <div class="surveys-list" *ngIf="filteredPendingSurveys.length > 0">
+            <div
+              class="survey-item pending-item"
+              *ngFor="let survey of filteredPendingSurveys"
+              (click)="openSurveyDetail(survey)"
+            >
+              <div class="survey-main">
+                <h4 class="survey-name">{{ survey.title }}</h4>
+                <p class="survey-manager">👤 Created by: {{ survey.createdBy.name }}</p>
+              </div>
+              <div class="survey-meta">
+                <span class="status-badge pending">PENDING</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="empty-state" *ngIf="filteredPendingSurveys.length === 0">
+            <p>No pending surveys</p>
+          </div>
+        </div>
+
+        <!-- Completed Surveys -->
+        <div class="surveys-section completed">
+          <div class="surveys-header">
+            <h3 class="surveys-title secondary">🏁 Completed Surveys</h3>
+          </div>
+
+          <div class="surveys-list" *ngIf="filteredCompletedSurveys.length > 0">
+            <div
+              class="survey-item completed-item"
+              *ngFor="let survey of filteredCompletedSurveys"
+              (click)="openSurveyDetail(survey)"
+            >
+              <div class="survey-main">
+                <h4 class="survey-name">{{ survey.title }}</h4>
+                <p class="survey-manager">👤 Created by: {{ survey.createdBy.name }}</p>
+              </div>
+              <div class="survey-meta">
+                <span class="response-badge">📊 {{ survey.questions.length }} questions</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="empty-state" *ngIf="filteredCompletedSurveys.length === 0">
+            <p>No completed surveys</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============= USERS TAB ============= -->
+      <div class="tab-content" *ngIf="activeTab === 'users'">
+        <div class="users-header-section">
+          <h3 class="users-title">Registered Users</h3>
+          <button class="add-user-btn" (click)="openAddUserModal()">
+            ➕ Add New User
+          </button>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-container">
+          <input
+            type="text"
+            class="search-bar"
+            placeholder="Search users by name, email, department or role..."
+            [(ngModel)]="usersSearchQuery"
+            (input)="searchUsers()"
+          />
+          <span class="search-icon">🔍</span>
+        </div>
+
+        <!-- Users Table/List -->
+        <div class="users-container">
+          <div *ngIf="isLoading" class="loading">
+            <p>Loading users...</p>
+          </div>
+
+          <div class="users-list" *ngIf="!isLoading && filteredUsers.length > 0">
+            <div class="user-item" *ngFor="let user of filteredUsers">
+              <div class="user-info">
+                <div class="user-avatar">
+                  {{ user.name.split(' ')[0].charAt(0) }}{{ user.name.split(' ')[1]?.charAt(0) || user.name.split(' ')[0].charAt(1) }}
+                </div>
+                <div class="user-details">
+                  <h4 class="user-name">{{ user.name }}</h4>
+                  <p class="user-email">{{ user.email }}</p>
+                </div>
+              </div>
+              <div class="user-meta">
+                <span class="role-badge" [ngClass]="'role-' + user.role.toLowerCase()">
+                  {{ user.role }}
+                </span>
+                <span class="dept-badge">📍 {{ user.department }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="empty-state" *ngIf="!isLoading && filteredUsers.length === 0">
+            <p>No users found</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Add User Modal -->
+  <div class="modal-overlay" *ngIf="showAddUserModal" (click)="closeAddUserModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Add New User</h2>
+        <button class="close-btn" (click)="closeAddUserModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p>User creation form coming soon...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Survey Detail Modal -->
+  <div class="modal-overlay" *ngIf="showSurveyDetailModal" (click)="closeSurveyDetail()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ selectedSurvey?.title }}</h2>
+        <button class="close-btn" (click)="closeSurveyDetail()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Description:</strong> {{ selectedSurvey?.description }}</p>
+        <p><strong>Created by:</strong> {{ selectedSurvey?.createdBy?.name }}</p>
+        <p><strong>Status:</strong> <span class="status-badge" [ngClass]="getSurveyStatusClass(selectedSurvey!)">{{ selectedSurvey?.status }}</span></p>
+        <p><strong>Total Questions:</strong> {{ selectedSurvey?.questions?.length || 0 }}</p>
+        <p><strong>Anonymous:</strong> {{ selectedSurvey?.isAnonymous ? 'Yes' : 'No' }}</p>
+        <p><strong>Start Date:</strong> {{ selectedSurvey?.startDate | date: 'MMM dd, yyyy' }}</p>
+        <p><strong>End Date:</strong> {{ selectedSurvey?.endDate | date: 'MMM dd, yyyy' }}</p>
+
+        <!-- Action Buttons for Pending Surveys -->
+        <div class="modal-actions" *ngIf="selectedSurvey?.status === 'PENDING_APPROVAL'">
+          <button class="btn-approve" (click)="approveSurvey(selectedSurvey!)">
+            ✅ Approve Survey
+          </button>
+          <button class="btn-reject" (click)="rejectSurvey(selectedSurvey!)">
+            ❌ Reject Survey
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

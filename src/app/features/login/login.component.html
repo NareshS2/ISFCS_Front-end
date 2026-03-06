@@ -1,0 +1,78 @@
+<div class="login-container">
+  <div class="login-card">
+    <!-- Header -->
+    <div class="login-header">
+      <h1>SurveyTrack</h1>
+      <p>Sign in to your account</p>
+    </div>
+
+    <!-- Error Message -->
+    @if (errorMessage) {
+      <div class="error-message">
+        <p>{{ errorMessage }}</p>
+      </div>
+    }
+
+    <!-- Form -->
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+      <!-- Email Field -->
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          placeholder="you@example.com"
+        />
+        @if (emailError && loginForm.get('email')?.touched) {
+          <p class="field-error">{{ emailError }}</p>
+        }
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group">
+        <label for="password">Password</label>
+        <div class="password-input-wrapper">
+          <input
+            id="password"
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="••••••••"
+          />
+          <button
+            type="button"
+            (click)="togglePasswordVisibility()"
+            class="toggle-password"
+          >
+            @if (showPassword) {
+              Hide
+            } @else {
+              Show
+            }
+          </button>
+        </div>
+        @if (passwordError && loginForm.get('password')?.touched) {
+          <p class="field-error">{{ passwordError }}</p>
+        }
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        [disabled]="isLoading || loginForm.invalid"
+        class="submit-button"
+      >
+        @if (isLoading) {
+          Signing in...
+        } @else {
+          Sign In
+        }
+      </button>
+    </form>
+
+    <!-- Footer -->
+    <div class="login-footer">
+      <p>Need help? <a href="#">Contact support</a></p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,169 @@
+<div class="employee-dashboard">
+  <!-- Header -->
+  <header class="dashboard-header">
+    <div class="header-left">
+      <h1 class="app-title">Survey Track</h1>
+    </div>
+    <div class="header-right">
+      <button class="header-icon notification-icon" (click)="toggleNotifications()" [class.active]="showNotificationPanel">
+        <span class="bell-icon">🔔</span>
+        <span class="notification-badge" *ngIf="notificationCount > 0">{{ notificationCount }}</span>
+      </button>
+      <button class="header-icon profile-icon" (click)="toggleProfileMenu()" [class.active]="showProfileMenu">
+        <span class="initials">{{ employeeInitials }}</span>
+      </button>
+    </div>
+
+    <!-- Notification Panel -->
+    <div class="notification-panel" *ngIf="showNotificationPanel" (clickOutside)="closeAllMenus()">
+      <div class="panel-header">
+        <h3>Notifications</h3>
+        <button class="close-btn" (click)="closeAllMenus()">✕</button>
+      </div>
+      <div class="notification-list" *ngIf="notifications.length > 0; else noNotifications">
+        <div class="notification-item" *ngFor="let notification of notifications">
+          <div class="notification-content">
+            <p class="notification-message">{{ notification.message }}</p>
+            <span class="notification-time" *ngIf="notification.createdAt">{{ notification.createdAt | date: 'short' }}</span>
+          </div>
+          <div class="notification-actions">
+            <button class="mark-read-btn" (click)="markNotificationAsRead(notification)" title="Mark as read">
+              ✓
+            </button>
+          </div>
+        </div>
+      </div>
+      <ng-template #noNotifications>
+        <div class="empty-state">
+          <p>No notifications</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Profile Menu -->
+    <div class="profile-menu" *ngIf="showProfileMenu" (clickOutside)="closeAllMenus()">
+      <div class="menu-header">
+        <span class="profile-circle">{{ employeeInitials }}</span>
+        <div class="user-info">
+          <p class="user-name">{{ employeeName }}</p>
+          <p class="user-email">{{ employeeDepartment }}</p>
+        </div>
+      </div>
+      <button class="menu-item" (click)="changePassword()">
+        <span class="menu-icon">🔐</span> Change Password
+      </button>
+      <button class="menu-item logout" (click)="logout()">
+        <span class="menu-icon">🚪</span> Logout
+      </button>
+    </div>
+  </header>
+
+  <!-- Welcome Section -->
+  <section class="welcome-section">
+    <h2>Welcome, {{ employeeName }}</h2>
+    <p class="department-info">{{ employeeDepartment }}</p>
+  </section>
+
+  <!-- Stats Section -->
+  <section class="stats-section">
+    <div class="stat-card pending-stat" style="cursor: pointer;">
+      <div class="stat-icon">📋</div>
+      <div class="stat-content">
+        <p class="stat-label">Pending Surveys</p>
+        <p class="stat-value">{{ participationStats.pendingSurveys }}</p>
+      </div>
+    </div>
+
+    <div class="stat-card completed-stat">
+      <div class="stat-icon">✓</div>
+      <div class="stat-content">
+        <p class="stat-label">Completed Surveys</p>
+        <p class="stat-value">{{ participationStats.completedSurveys }}</p>
+      </div>
+    </div>
+
+    <div class="stat-card completion-stat">
+      <div class="stat-icon">📈</div>
+      <div class="stat-content">
+        <p class="stat-label">Completion Rate</p>
+        <p class="stat-value">{{ participationStats.completionRate }}%</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Search Section -->
+  <section class="search-section">
+    <div class="search-container">
+      <input
+        type="text"
+        class="search-input"
+        placeholder="Search surveys..."
+        [(ngModel)]="searchQuery"
+        (input)="searchSurveys()"
+      />
+      <span class="search-icon">🔍</span>
+    </div>
+  </section>
+
+  <!-- Surveys List -->
+  <section class="surveys-section">
+    <h3 class="section-title">Available Surveys</h3>
+    <div class="surveys-grid" *ngIf="!isLoadingData; else loadingSpinner">
+      <div *ngIf="filteredActiveSurveys.length > 0; else noSurveys" class="surveys-list">
+        <div class="survey-item" *ngFor="let survey of filteredActiveSurveys" (click)="openSurvey(survey.surveyId)">
+          <div class="survey-content">
+            <h4 class="survey-title">{{ survey.title }}</h4>
+            <p class="survey-description">{{ survey.description | slice: 0: 100 }}...</p>
+            <div class="survey-meta">
+              <span class="survey-creator">By: {{ survey.createdBy?.name }}</span>
+              <span class="survey-status active">ACTIVE</span>
+            </div>
+          </div>
+          <div class="survey-action">
+            <span class="action-icon">→</span>
+          </div>
+        </div>
+      </div>
+      <ng-template #noSurveys>
+        <div class="empty-state">
+          <p>No surveys found matching your search.</p>
+        </div>
+      </ng-template>
+    </div>
+    <ng-template #loadingSpinner>
+      <div class="loading-state">
+        <p>Loading surveys...</p>
+      </div>
+    </ng-template>
+  </section>
+
+  <!-- Completed Surveys Section -->
+  <section class="surveys-section completed-surveys">
+    <h3 class="section-title">Completed Surveys</h3>
+    <div class="surveys-grid" *ngIf="!isLoadingData; else loadingCompletedSpinner">
+      <div *ngIf="filteredCompletedSurveys.length > 0; else noCompletedSurveys" class="surveys-list">
+        <div class="survey-item completed" *ngFor="let survey of filteredCompletedSurveys">
+          <div class="survey-content">
+            <h4 class="survey-title">{{ survey.title }}</h4>
+            <p class="survey-description">{{ survey.description | slice: 0: 100 }}...</p>
+            <div class="survey-meta">
+              <span class="survey-creator">By: {{ survey.createdBy?.name }}</span>
+              <span class="survey-status completed">✓ COMPLETED</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <ng-template #noCompletedSurveys>
+        <div class="empty-state">
+          <p>No completed surveys yet.</p>
+        </div>
+      </ng-template>
+    </div>
+    <ng-template #loadingCompletedSpinner>
+      <div class="loading-state">
+        <p>Loading completed surveys...</p>
+      </div>
+    </ng-template>
+  </section>
+
+
