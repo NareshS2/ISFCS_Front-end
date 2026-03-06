@@ -5,6 +5,7 @@ import jsPDF from 'jspdf';
 import { SurveyService } from '../../services/survey.service';
 import html2canvas from 'html2canvas';
 import { Chart, registerables } from 'chart.js';
+import { NotificationService } from '../../services/notification.service'; // Import the notification service
 
 Chart.register(...registerables);
 
@@ -74,11 +75,8 @@ export class AdminDashboardComponent implements AfterViewInit {
   currentView = signal<'analytics' | 'users' | 'approvals'>('analytics');
 
   private surveyService = inject(SurveyService);
+  private notifService = inject(NotificationService); // Inject the notification service
   pendingSurveys = this.surveyService.pendingSurveys;
-
-  approveSurvey(id: number) {
-    this.surveyService.updateStatus(id, 'approved');
-  }
 
   rejectSurvey(id: number) {
     if (confirm('Are you sure you want to reject this survey?')) {
@@ -218,5 +216,18 @@ export class AdminDashboardComponent implements AfterViewInit {
     pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
     pdf.save('Admin-Analytics-Report.pdf');
   }
+
+  // In admin-dashboard.component.ts
+approveSurvey(id: number) {
+  // 1. Update the status in the survey service
+  this.surveyService.updateStatus(id, 'approved');
+  
+  // 2. Automatically push a notification to the notification service
+  // Since the service is "providedIn: 'root'", the Employee Dashboard sees this instantly
+  this.notifService.addNotification(
+    "A new survey has been published! Please check your dashboard.", 
+    'survey'
+  );
+}
 }
 

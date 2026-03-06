@@ -2,7 +2,7 @@
   <header class="bg-white border-b px-8 py-3 flex justify-between items-center sticky top-0 z-10">
     <div class="flex items-center gap-2">
       <div class="flex items-center justify-center overflow-hidden">
-        <img src="logo1.jpg" alt="SurveyTrack Logo" class="h-8 w-auto object-contain rounded-lg">
+        <img src="public/logo1.jpg" alt="SurveyTrack Logo" class="h-8 w-auto object-contain rounded-lg">
       </div>
       <div>
         <h1 class="font-bold text-lg leading-tight">SurveyTrack</h1>
@@ -15,15 +15,19 @@
         <span class="absolute -top-1 -right-1 h-2 w-2 bg-red-500 rounded-full border-2 border-white"></span>
         🔔
       </button>
-      <div class="flex items-center gap-3">
-        <div class="text-right">
-          <p class="text-sm font-bold">{{manager().name}}</p>
-          <p class="text-xs text-gray-500">{{manager().role}}</p>
-        </div>
-        <div class="h-10 w-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">SM
-        </div>
-      </div>
+      <div (click)="toggleProfile()" class="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-1 rounded-lg transition-all">
+    <div class="text-right hidden sm:block">
+      <p class="text-xs font-bold text-slate-700">{{ currentUser().name }}</p>
+      <p class="text-[10px] text-gray-400 uppercase font-bold">{{ currentUser().role }}</p>
     </div>
+    <div class="h-9 w-9 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs border-2 border-indigo-100">
+      {{ currentUser().name.substring(0, 2).toUpperCase() }}
+    </div>
+  </div>
+    </div>
+
+    
+
   </header>
 
   <main class="max-w-7xl mx-auto p-8">
@@ -37,6 +41,56 @@
         <span class="text-xl">+</span> Create Survey
       </button>
     </div>
+
+    @if (isProfileOpen()) {
+  <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+      
+      <div class="bg-indigo-600 p-6 text-white relative">
+        <button (click)="isProfileOpen.set(false)" class="absolute top-4 right-4 text-white/80 hover:text-white text-2xl">&times;</button>
+        <div class="flex items-center gap-4">
+          <div class="h-16 w-16 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl font-bold">
+            {{ currentUser().name.substring(0, 2).toUpperCase() }}
+          </div>
+          <div>
+            <h2 class="text-xl font-bold">{{ currentUser().name }}</h2>
+            <p class="text-indigo-100 text-sm">{{ currentUser().email }}</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-8 space-y-6">
+        <div class="grid grid-cols-2 gap-4 pb-6 border-b">
+          <div>
+            <p class="text-[10px] text-gray-400 uppercase font-bold">Department</p>
+            <p class="text-sm font-semibold text-slate-700">{{ currentUser().dept }}</p>
+          </div>
+          <div>
+            <p class="text-[10px] text-gray-400 uppercase font-bold">Account Role</p>
+            <p class="text-sm font-semibold text-slate-700">{{ currentUser().role }}</p>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <h3 class="font-bold text-slate-800 text-sm">Update Password</h3>
+          <input type="password" [(ngModel)]="passwordData().current" placeholder="Current Password" 
+                 class="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+          
+          <div class="grid grid-cols-2 gap-3">
+            <input type="password" [(ngModel)]="passwordData().new" placeholder="New Password" 
+                   class="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+            <input type="password" [(ngModel)]="passwordData().confirm" placeholder="Confirm New" 
+                   class="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+          </div>
+        </div>
+
+        <button (click)="updatePassword()" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-indigo-200">
+          Save New Password
+        </button>
+      </div>
+    </div>
+  </div>
+}
 
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
       @for (stat of stats(); track stat.label) {

@@ -2,7 +2,7 @@
   <header class="bg-white border-b border-gray-200 px-6 py-3 flex justify-between items-center sticky top-0 z-10">
     <div class="flex items-center gap-2">
       <div class="flex items-center justify-center overflow-hidden">
-        <img src="logo1.jpg" alt="SurveyTrack Logo" class="h-8 w-auto object-contain rounded-lg">
+        <img src="public/logo1.jpg" alt="SurveyTrack Logo" class="h-8 w-auto object-contain rounded-lg">
       </div>
       <div>
         <h1 class="font-bold text-lg leading-tight">SurveyTrack</h1>
@@ -11,31 +11,121 @@
     </div>
 
     <div class="flex items-center gap-6">
-      <button class="relative text-gray-400 hover:text-gray-600">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-        </svg>
-        <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 border-2 border-white"></span>
-      </button>
-      <div class="flex items-center gap-3">
-        <div class="text-right">
-          <p class="text-sm font-bold">{{user().fullName}}</p>
-          <p class="text-xs text-gray-500">{{user().role}}</p>
+      <div class="relative">
+        <button (click)="toggleNotifications()" class="p-2 text-gray-400 hover:text-indigo-600 transition-all relative">
+          <span class="text-xl">🔔</span>
+          @if (unreadCount() > 0) {
+          <span
+            class="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white border-2 border-white">
+            {{unreadCount()}}
+          </span>
+          }
+        </button>
+
+        @if (isProfileOpen()) {
+        <div class="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div
+            class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+
+            <div class="bg-indigo-600 p-6 text-white relative">
+              <button (click)="isProfileOpen.set(false)"
+                class="absolute top-4 right-4 text-white/80 hover:text-white text-2xl">&times;</button>
+              <div class="flex items-center gap-4">
+                <div
+                  class="h-16 w-16 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl font-bold">
+                  {{ user().name.substring(0, 2).toUpperCase() }}
+                </div>
+                <div>
+                  <h2 class="text-xl font-bold">{{ user().name }}</h2>
+                  <p class="text-indigo-100 text-sm">{{ user().email }}</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-8 space-y-6">
+              <div class="grid grid-cols-2 gap-4 pb-6 border-b">
+                <div>
+                  <p class="text-[10px] text-gray-400 uppercase font-bold">Department</p>
+                  <p class="text-sm font-semibold text-slate-700">{{ user().department }}</p>
+                </div>
+                <div>
+                  <p class="text-[10px] text-gray-400 uppercase font-bold">Account Role</p>
+                  <p class="text-sm font-semibold text-slate-700">{{ user().role }}</p>
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <h3 class="font-bold text-slate-800 text-sm">Update Password</h3>
+                <input type="password" [(ngModel)]="passwordData().current" placeholder="Current Password"
+                  class="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+
+                <div class="grid grid-cols-2 gap-3">
+                  <input type="password" [(ngModel)]="passwordData().new" placeholder="New Password"
+                    class="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                  <input type="password" [(ngModel)]="passwordData().confirm" placeholder="Confirm New"
+                    class="w-full p-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+              </div>
+
+              <button (click)="updatePassword()"
+                class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-indigo-200">
+                Save New Password
+              </button>
+            </div>
+          </div>
         </div>
-        <div class="h-10 w-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
-          JE
+        }
+      </div>
+      <div (click)="toggleProfile()"
+        class="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-1 rounded-lg transition-all">
+        <div class="text-right hidden sm:block">
+          <p class="text-xs font-bold text-slate-700">{{ user().name }}</p>
+          <p class="text-[10px] text-gray-400 uppercase font-bold">{{ user().role }}</p>
+        </div>
+        <div
+          class="h-9 w-9 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs border-2 border-indigo-100">
+          {{ user().name.substring(0, 2).toUpperCase() }}
         </div>
       </div>
     </div>
   </header>
+  @if (showNotifDropdown()) {
+      <div
+        class="absolute right-0 mt-3 w-72 bg-white border border-gray-100 shadow-2xl rounded-2xl z-[60] overflow-hidden">
+        <div class="p-4 border-b flex justify-between items-center bg-slate-50/50">
+          <h3 class="font-bold text-xs uppercase tracking-wider text-gray-500">Notifications</h3>
+          <button (click)="markAllRead()" class="text-[10px] font-bold text-indigo-600">Clear All</button>
+        </div>
+
+        <div class="max-h-80 overflow-y-auto">
+          @for (n of notifications(); track n.id) {
+          <div class="p-4 border-b border-gray-50 hover:bg-slate-50 transition-colors cursor-pointer"
+            [class.bg-blue-50/30] Nordstrom="!n.isRead">
+            <div class="flex gap-3">
+              <div class="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-xs">
+                {{ n.type === 'survey' ? '📋' : '✨' }}
+              </div>
+              <div>
+                <p class="text-xs font-medium text-gray-800">{{n.message}}</p>
+                <p class="text-[10px] text-gray-400 mt-1">{{n.time | date:'shortTime'}}</p>
+              </div>
+            </div>
+          </div>
+          } @empty {
+          <div class="p-10 text-center">
+            <p class="text-xs text-gray-400 italic">All caught up!</p>
+          </div>
+          }
+        </div>
+      </div>
+      }
 
   <main class="max-w-7xl mx-auto p-8">
     <div class="mb-8">
       <h2 class="text-3xl font-bold text-gray-900">Welcome back, {{user().name}}!</h2>
       <p class="text-gray-500">{{user().department}} • {{user().role}}</p>
     </div>
-
+    
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
       <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
         <div class="flex justify-between items-start mb-4">
