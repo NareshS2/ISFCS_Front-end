@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { SurveyService, Survey, AnswerRequestDTO, ResponseRequestDTO } from '../../../../core/services/survey.service';
+import { finalize } from 'rxjs/operators';
+import { SurveyService, Survey, AnswerRequestDTO, ResponseRequestDTO, Option } from '../../../../core/services/survey.service';
 
 @Component({
   selector: 'app-survey-detail',
@@ -18,10 +19,12 @@ export class SurveyDetailComponent implements OnInit {
   error: string | null = null;
   answers: Map<number, string> = new Map();
 
+
   constructor(
     private surveyService: SurveyService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef // Required to force UI refresh
   ) {}
 
   ngOnInit(): void {
@@ -30,97 +33,100 @@ export class SurveyDetailComponent implements OnInit {
 
   loadSurvey(): void {
     this.isLoading = true;
-    const surveyId = this.route.snapshot.params['id'];
-    console.log('Loading survey with ID:', surveyId, 'Type:', typeof surveyId);
+    const surveyId = Number(this.route.snapshot.params['id']);
 
-    this.surveyService.getSurveyById(surveyId).subscribe({
-      next: (survey: Survey) => {
-        console.log('Survey loaded successfully:', survey);
-        console.log('Survey structure:', {
-          surveyId: survey.surveyId,
-          title: survey.title,
-          questions: survey.questions,
-          firstQuestion: survey.questions?.[0]
-        });
-        this.survey = survey;
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error loading survey:', err);
-        console.error('Full error object:', JSON.stringify(err));
-        this.error = 'Failed to load survey: ' + (err?.error?.message || err?.message || 'Unknown error');
-        this.isLoading = false;
-      }
-    });
+    this.surveyService.getSurveyById(surveyId)
+      .pipe(
+        finalize(() => {
+          this.isLoading = false;
+          // This forces Angular to acknowledge the survey data and hide the loader
+          this.cdr.detectChanges(); 
+        })
+      )
+      .subscribe({
+        next: (surveyData: Survey) => {
+          this.survey = surveyData;
+          console.log('Survey data assigned to component:', this.survey);
+        },
+        error: (err) => {
+          console.error('Error loading survey:', err);
+          this.error = 'Failed to load survey: ' + (err?.error?.message || err?.message);
+        }
+      });
   }
 
-  // Update answer for a question
-  updateAnswer(questionId: number, value: string): void {
-    this.answers.set(questionId, value);
-  }
+updateAnswer(questionId: number, value: any): void {
+  // Force the value to a string as expected by the Backend DTO
+  this.answers.set(questionId, value.toString());
+  
+  // CRITICAL: Manually tell Angular to check the button [disabled] status again
+  this.cdr.detectChanges(); 
+}
 
-  // Get answer for a question
   getAnswer(questionId: number): string {
     return this.answers.get(questionId) || '';
   }
 
-  // Check if all required fields are answered
-  areAllQuestionsAnswered(): boolean {
-    if (!this.survey) return false;
-    return this.survey.questions.every(q => this.answers.has(q.questionId) && this.answers.get(q.questionId)?.trim());
+// Update this function in your component
+areAllQuestionsAnswered(): boolean {
+  if (!this.survey || !this.survey.questions) return false;
+  
+  // Every question must have an entry in the map that isn't just whitespace
+  return this.survey.questions.every(q => {
+    const answer = this.answers.get(q.questionId);
+    return answer !== undefined && answer !== null && answer.toString().trim() !== '';
+  });
+}
+submitSurvey(): void {
+  if (!this.survey || !this.areAllQuestionsAnswered()) {
+    this.error = 'Please answer all questions before submitting';
+    return;
   }
 
-  // Submit survey response
-  submitSurvey(): void {
-    if (!this.survey || !this.areAllQuestionsAnswered()) {
-      this.error = 'Please answer all questions before submitting';
-      return;
-    }
+  this.isSubmitting = true;
+  this.error = null;
 
-    this.isSubmitting = true;
-    this.error = null;
+  // Map the answers from the Map to the Array format expected by the DTO
+  const answerArray: AnswerRequestDTO[] = Array.from(this.answers.entries()).map(([qId, val]) => ({
+    questionId: qId,
+    value: val
+  }));
 
-    // Build answer array from the map
-    const answerArray: AnswerRequestDTO[] = Array.from(this.answers.entries()).map(([questionId, value]) => ({
-      questionId,
-      value
-    }));
+  // Match the Spring Boot ResponseRequestDTO exactly
+  const request: ResponseRequestDTO = {
+    answers: answerArray,
+    // Note: Use 'anonymous' from your survey data if that's how it's named in the console
+    isAnonymous: (this.survey as any).anonymous || this.survey.isAnonymous || false
+  };
 
-    const request: ResponseRequestDTO = {
-      answers: answerArray,
-      isAnonymous: this.survey.isAnonymous
-    };
-
-    this.surveyService.submitSurveyResponse(this.survey.surveyId, request).subscribe({
-      next: () => {
-        this.isSubmitting = false;
-        // Navigate back to employee dashboard
+  this.surveyService.submitSurveyResponse(this.survey.surveyId, request)
+    .pipe(finalize(() => {
+      this.isSubmitting = false;
+      this.cdr.detectChanges();
+    }))
+    .subscribe({
+      next: (res) => {
+        console.log('Submission successful:', res);
+        // Navigate back or show success state
         this.router.navigate(['/dashboard/employee']);
       },
       error: (err) => {
-        console.error('Error submitting survey:', err);
-        this.error = 'Failed to submit survey. Please try again.';
-        this.isSubmitting = false;
+        console.error('Submission error:', err);
+        this.error = err.error?.message || 'Failed to submit response. Please try again.';
       }
     });
-  }
+}
 
-  // Format date for display
   formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+    if (!dateString) return 'N/A';
+    return new Date(dateString).toLocaleDateString();
   }
 
-  // Check if deadline is passed
   isDeadlinePassed(): boolean {
     if (!this.survey) return false;
     return new Date(this.survey.endDate) < new Date();
   }
 
-  // Go back to dashboard
   goBack(): void {
     this.router.navigate(['/dashboard/employee']);
   }

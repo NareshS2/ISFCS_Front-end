@@ -21,6 +21,11 @@ export interface Survey {
   isAnonymous: boolean;
 }
 
+export interface Option {
+  optionId: number;
+  text: string; // Changed from optionText to text
+}
+
 export interface Question {
   questionId: number;
   text: string;
@@ -40,7 +45,7 @@ export interface AnswerRequestDTO {
 
 export interface ResponseRequestDTO {
   answers: AnswerRequestDTO[];
-  isAnonymous: boolean;
+  isAnonymous: boolean; // Ensure this matches the Java field name exactly
 }
 
 export interface SuccessResponse<T> {
@@ -89,12 +94,13 @@ export class SurveyService {
     );
   }
 
-  // Submit survey response - POST to /api/surveys/{surveyId}/responses
-  submitSurveyResponse(surveyId: number, response: ResponseRequestDTO): Observable<any> {
-    return this.http.post<SuccessResponse<any>>(`${API_URL}/surveys/${surveyId}/response`, response).pipe(
-      map((response: SuccessResponse<any>) => response.data)
-    );
-  }
+ // Update the method in your SurveyService class
+submitSurveyResponse(surveyId: number, response: ResponseRequestDTO): Observable<any> {
+  // Path must match @RequestMapping("/api/surveys/{surveyId}/responses")
+  return this.http.post<SuccessResponse<any>>(`${API_URL}/surveys/${surveyId}/responses`, response).pipe(
+    map((response: SuccessResponse<any>) => response.data)
+  );
+}
 
   // Search surveys client-side
   searchSurveys(keyword: string, surveys: Survey[]): Survey[] {

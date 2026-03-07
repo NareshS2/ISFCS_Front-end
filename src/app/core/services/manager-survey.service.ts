@@ -56,6 +56,11 @@ export class ManagerSurveyService {
     return this.http.post<any>(`${API_URL}/surveys`, surveyData);
   }
 
+  // Add this method: Submit a survey for approval
+  submitSurvey(id: number): Observable<any> {
+    return this.http.patch<any>(`${API_URL}/surveys/${id}/submit`, {});
+  }
+
   // Update a survey
   updateSurvey(id: number, surveyData: SurveyRequestDTO): Observable<any> {
     return this.http.put<any>(`${API_URL}/surveys/${id}`, surveyData);

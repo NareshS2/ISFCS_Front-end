@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { AdminService, User, Survey } from '../../../core/services/admin.service';
 
 @Component({
@@ -47,6 +48,17 @@ export class AdminDashboardComponent implements OnInit {
   // Profile menu
   showProfileMenu: boolean = false;
 
+  newUser = {
+  name: '',
+  email: '',
+  password: '',
+  role: 'EMPLOYEE',
+  department: ''
+};
+
+  departments = ['IT', 'HR', 'FINANCE', 'MARKETING', 'OPERATIONS', 'SALES', 'ENGINEERING', 'ADMINISTRATION'];
+  roles = ['EMPLOYEE', 'MANAGER', 'ADMIN'];
+
   constructor(private adminService: AdminService) {}
 
   ngOnInit(): void {
@@ -64,29 +76,54 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   loadSurveys(): void {
-    this.adminService.getActiveSurveys(0, 100).subscribe({
-      next: (surveys: Survey[]) => {
-        // Categorize surveys by status
-        this.activeSurveys = surveys.filter((s: Survey) => s.status === 'ACTIVE');
-        this.pendingSurveys = surveys.filter((s: Survey) => s.status === 'PENDING_APPROVAL');
-        this.completedSurveys = surveys.filter((s: Survey) => 
-          s.status === 'CLOSED' || s.status === 'REJECTED'
-        );
+    this.isLoading = true;
+    
+    // Use forkJoin to fetch both sets of surveys at once
+    forkJoin({
+      active: this.adminService.getActiveSurveys(0, 100),
+      pending: this.adminService.getPendingApprovalSurveys(0, 100)
+    }).subscribe({
+      next: (result) => {
+        const now = new Date();
 
-        // Initialize filtered lists
-        this.filteredApprovedSurveys = [...this.activeSurveys];
-        this.filteredPendingSurveys = [...this.pendingSurveys];
-        this.filteredCompletedSurveys = [...this.completedSurveys];
+        // 1. Process Active Surveys & Check Deadlines
+        const activeFromApi = result.active || [];
+        this.activeSurveys = activeFromApi.filter(s => {
+        const endDate = new Date(s.endDate);
+        return s.status === 'ACTIVE' && endDate > now;
+      });
 
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error loading surveys:', err);
-        this.error = 'Failed to load surveys';
-        this.isLoading = false;
-      }
-    });
-  }
+      // 2. Identify Completed/Expired Surveys
+      const expiredSurveys = activeFromApi.filter(s => {
+        const endDate = new Date(s.endDate);
+        return s.status === 'CLOSED' || (s.status === 'ACTIVE' && endDate <= now);
+      });
+      
+      this.completedSurveys = [...expiredSurveys];
+
+      // 3. Process Pending Surveys
+      this.pendingSurveys = result.pending || [];
+
+      // Update UI lists
+      this.refreshFilteredLists();
+      this.isLoading = false;
+    },
+    error: (err) => {
+      this.error = 'Failed to load surveys';
+      this.isLoading = false;
+    }
+  });
+}
+
+// Helper to keep code clean
+refreshFilteredLists(): void {
+  this.filteredApprovedSurveys = [...this.activeSurveys];
+  this.filteredPendingSurveys = [...this.pendingSurveys];
+  this.filteredCompletedSurveys = [...this.completedSurveys];
+  this.searchSurveys(); 
+}
+
+
 
   loadUsers(): void {
     this.adminService.getAllUsers(0, 100).subscribe({
@@ -221,6 +258,39 @@ export class AdminDashboardComponent implements OnInit {
   openAddUserModal(): void {
     this.showAddUserModal = true;
   }
+
+  // Add this method to handle submission
+addUser(): void {
+  if (!this.newUser.name || !this.newUser.email || !this.newUser.password || !this.newUser.department) {
+    alert('Please fill in all required fields');
+    return;
+  }
+
+  this.isLoading = true;
+  this.adminService.createUser(this.newUser).subscribe({
+    next: (response) => {
+      alert('User registered successfully');
+      this.closeAddUserModal();
+      this.loadUsers(); // Refresh the list to show the new user
+      this.resetUserForm();
+      this.isLoading = false;
+    },
+    error: (err) => {
+      this.error = err.error?.message || 'Failed to create user';
+      this.isLoading = false;
+    }
+  });
+}
+
+resetUserForm(): void {
+  this.newUser = {
+    name: '',
+    email: '',
+    password: '',
+    role: 'EMPLOYEE',
+    department: ''
+  };
+}
 
   closeAddUserModal(): void {
     this.showAddUserModal = false;

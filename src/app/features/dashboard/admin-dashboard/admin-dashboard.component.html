@@ -1,5 +1,4 @@
 <div class="admin-dashboard">
-  <!-- Header -->
   <header class="dashboard-header">
     <div class="header-content">
       <div class="logo-section">
@@ -7,12 +6,10 @@
       </div>
 
       <div class="header-actions">
-        <!-- Notifications Bell -->
         <div class="notification-icon" (click)="toggleNotifications()">
           <span class="bell-icon">🔔</span>
           <span class="notification-badge" *ngIf="notificationCount > 0">{{ notificationCount }}</span>
 
-          <!-- Notification Panel -->
           <div class="notification-panel" *ngIf="showNotificationPanel">
             <div class="panel-header">Notifications</div>
             <div class="notification-list" *ngIf="notifications.length > 0">
@@ -26,11 +23,9 @@
           </div>
         </div>
 
-        <!-- Profile Circle -->
         <div class="profile-circle" (click)="toggleProfileMenu()">
           {{ getInitials() }}
 
-          <!-- Profile Menu -->
           <div class="profile-menu" *ngIf="showProfileMenu">
             <div class="menu-header">
               <p class="admin-name">{{ adminName }}</p>
@@ -46,9 +41,7 @@
     </div>
   </header>
 
-  <!-- Main Content -->
   <main class="dashboard-content">
-    <!-- Admin Dashboard Section -->
     <section class="admin-section">
       <div class="section-header">
         <div class="section-info">
@@ -57,7 +50,6 @@
         </div>
       </div>
 
-      <!-- Toggle Bar -->
       <div class="toggle-bar">
         <button
           class="toggle-btn"
@@ -75,14 +67,11 @@
         </button>
       </div>
 
-      <!-- Error Message -->
       <div *ngIf="error" class="error-message">
         <p>{{ error }}</p>
       </div>
 
-      <!-- ============= SURVEYS TAB ============= -->
       <div class="tab-content" *ngIf="activeTab === 'surveys'">
-        <!-- Search Bar for Surveys -->
         <div class="search-container">
           <input
             type="text"
@@ -94,10 +83,9 @@
           <span class="search-icon">🔍</span>
         </div>
 
-        <!-- Active & Approved Surveys -->
         <div class="surveys-section">
           <div class="surveys-header">
-            <h3 class="surveys-title">✅ Approved & Active Surveys</h3>
+            <h3 class="surveys-title">🚀 Active Surveys</h3>
           </div>
 
           <div class="surveys-list" *ngIf="filteredApprovedSurveys.length > 0">
@@ -112,16 +100,16 @@
               </div>
               <div class="survey-meta">
                 <span class="response-badge">📊 {{ survey.questions.length }} questions</span>
+                <span class="deadline-tag">Ends: {{ survey.endDate | date: 'shortDate' }}</span>
               </div>
             </div>
           </div>
 
           <div class="empty-state" *ngIf="filteredApprovedSurveys.length === 0">
-            <p>No active surveys</p>
+            <p>No active surveys currently available</p>
           </div>
         </div>
 
-        <!-- Pending Approval Surveys -->
         <div class="surveys-section pending">
           <div class="surveys-header">
             <h3 class="surveys-title warning">⏳ Pending Approval</h3>
@@ -144,14 +132,13 @@
           </div>
 
           <div class="empty-state" *ngIf="filteredPendingSurveys.length === 0">
-            <p>No pending surveys</p>
+            <p>No surveys awaiting approval</p>
           </div>
         </div>
 
-        <!-- Completed Surveys -->
         <div class="surveys-section completed">
           <div class="surveys-header">
-            <h3 class="surveys-title secondary">🏁 Completed Surveys</h3>
+            <h3 class="surveys-title secondary">🏁 Completed / Expired Surveys</h3>
           </div>
 
           <div class="surveys-list" *ngIf="filteredCompletedSurveys.length > 0">
@@ -166,17 +153,17 @@
               </div>
               <div class="survey-meta">
                 <span class="response-badge">📊 {{ survey.questions.length }} questions</span>
+                <span class="status-badge status-closed">CLOSED</span>
               </div>
             </div>
           </div>
 
           <div class="empty-state" *ngIf="filteredCompletedSurveys.length === 0">
-            <p>No completed surveys</p>
+            <p>No completed surveys found</p>
           </div>
         </div>
       </div>
 
-      <!-- ============= USERS TAB ============= -->
       <div class="tab-content" *ngIf="activeTab === 'users'">
         <div class="users-header-section">
           <h3 class="users-title">Registered Users</h3>
@@ -185,7 +172,6 @@
           </button>
         </div>
 
-        <!-- Search Bar -->
         <div class="search-container">
           <input
             type="text"
@@ -197,7 +183,6 @@
           <span class="search-icon">🔍</span>
         </div>
 
-        <!-- Users Table/List -->
         <div class="users-container">
           <div *ngIf="isLoading" class="loading">
             <p>Loading users...</p>
@@ -231,20 +216,58 @@
     </section>
   </main>
 
-  <!-- Add User Modal -->
   <div class="modal-overlay" *ngIf="showAddUserModal" (click)="closeAddUserModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2>Add New User</h2>
-        <button class="close-btn" (click)="closeAddUserModal()">✕</button>
-      </div>
-      <div class="modal-body">
-        <p>User creation form coming soon...</p>
-      </div>
+  <div class="modal-content add-user-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>➕ Register New User</h2>
+      <button class="close-btn" (click)="closeAddUserModal()">✕</button>
     </div>
-  </div>
+    
+    <form (ngSubmit)="addUser()" #userForm="ngForm">
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" name="name" [(ngModel)]="newUser.name" placeholder="John Doe" required />
+        </div>
 
-  <!-- Survey Detail Modal -->
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" name="email" [(ngModel)]="newUser.email" placeholder="john@company.com" required />
+        </div>
+
+        <div class="form-group">
+          <label>Initial Password</label>
+          <input type="password" name="password" [(ngModel)]="newUser.password" placeholder="Min 8 characters" required minlength="8" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Role</label>
+            <select name="role" [(ngModel)]="newUser.role">
+              <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Department</label>
+            <select name="department" [(ngModel)]="newUser.department" required>
+              <option value="" disabled selected>Select Dept</option>
+              <option *ngFor="let dept of departments" [value]="dept">{{ dept }}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="closeAddUserModal()">Cancel</button>
+        <button type="submit" class="btn-primary" [disabled]="!userForm.form.valid || isLoading">
+          {{ isLoading ? 'Creating...' : 'Register User' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
   <div class="modal-overlay" *ngIf="showSurveyDetailModal" (click)="closeSurveyDetail()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <div class="modal-header">
@@ -260,7 +283,6 @@
         <p><strong>Start Date:</strong> {{ selectedSurvey?.startDate | date: 'MMM dd, yyyy' }}</p>
         <p><strong>End Date:</strong> {{ selectedSurvey?.endDate | date: 'MMM dd, yyyy' }}</p>
 
-        <!-- Action Buttons for Pending Surveys -->
         <div class="modal-actions" *ngIf="selectedSurvey?.status === 'PENDING_APPROVAL'">
           <button class="btn-approve" (click)="approveSurvey(selectedSurvey!)">
             ✅ Approve Survey
@@ -273,3 +295,4 @@
     </div>
   </div>
 </div>
+

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ManagerSurveyService, Survey, SurveyStats } from '../../../core/services/manager-survey.service';
 import { ParticipationService } from '../../../core/services/participation.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-manager-dashboard',
@@ -44,10 +45,11 @@ export class ManagerDashboardComponent implements OnInit {
   // Profile menu
   showProfileMenu: boolean = false;
 
-  constructor(
-    private surveyService: ManagerSurveyService,
-    private participationService: ParticipationService
-  ) {}
+ constructor(
+  private surveyService: ManagerSurveyService,
+  private participationService: ParticipationService,
+  private router: Router // Inject Router
+) {}
 
   ngOnInit(): void {
     this.loadManagerDashboard();
@@ -112,8 +114,9 @@ export class ManagerDashboardComponent implements OnInit {
   }
 
   openCreateModal(): void {
-    this.showCreateModal = true;
-  }
+  // Navigate to the dedicated creation page
+  this.router.navigate(['/dashboard/manager/create-survey']);
+}
 
   closeCreateModal(): void {
     this.showCreateModal = false;

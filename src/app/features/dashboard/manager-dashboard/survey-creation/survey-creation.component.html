@@ -1,0 +1,75 @@
+<div class="create-survey-page">
+  <div class="header">
+    <button class="back-btn" (click)="goBack()">← Back</button>
+    <h1>Create New Survey</h1>
+  </div>
+
+  <div class="form-container">
+    <section class="form-section">
+      <h3>Survey Details</h3>
+      <div class="input-group">
+        <label>Title</label>
+        <input type="text" [(ngModel)]="survey.title" placeholder="Enter survey title">
+      </div>
+      <div class="input-group">
+        <label>Description</label>
+        <textarea [(ngModel)]="survey.description" placeholder="What is this survey about?"></textarea>
+      </div>
+      <div class="row">
+        <div class="input-group">
+          <label>Start Date</label>
+          <input type="datetime-local" [(ngModel)]="survey.startDate">
+        </div>
+        <div class="input-group">
+          <label>End Date</label>
+          <input type="datetime-local" [(ngModel)]="survey.endDate">
+        </div>
+      </div>
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="survey.isAnonymous">
+        Anonymous Responses
+      </label>
+    </section>
+
+    <section class="questions-section">
+      <div class="section-header">
+        <h3>Questions ({{ survey.questions.length }})</h3>
+        <div class="add-buttons">
+          <button (click)="addQuestion('TEXT')">+ Text</button>
+          <button (click)="addQuestion('MCQ')">+ MCQ</button>
+          <button (click)="addQuestion('RATING')">+ Rating</button>
+        </div>
+      </div>
+
+      <div *ngFor="let q of survey.questions; let i = index" class="question-card">
+        <div class="q-header">
+          <span>Question {{ i + 1 }} ({{ q.type }})</span>
+          <button class="delete-btn" (click)="removeQuestion(i)">🗑️</button>
+        </div>
+
+        <input type="text" [(ngModel)]="q.text" placeholder="Enter question text" class="q-input">
+
+        <div *ngIf="q.type === 'MCQ'" class="mcq-options">
+          <div *ngFor="let opt of q.options; let j = index" class="option-row">
+            <input type="text" [(ngModel)]="opt.text" [placeholder]="'Option ' + (j+1)">
+            <button (click)="removeOption(i, j)" *ngIf="q.options.length > 1">✕</button>
+          </div>
+          <button class="add-opt-btn" (click)="addOption(i)">+ Add Option</button>
+        </div>
+
+        <div *ngIf="q.type === 'RATING'" class="rating-range">
+          <label>Min: <input type="number" [(ngModel)]="q.minRating"></label>
+          <label>Max: <input type="number" [(ngModel)]="q.maxRating"></label>
+        </div>
+      </div>
+    </section>
+
+    <div class="error-msg" *ngIf="error">{{ error }}</div>
+
+    <div class="actions">
+  <button class="submit-btn" [disabled]="isSubmitting || !survey.title" (click)="createSurvey()">
+    {{ isSubmitting ? 'Creating...' : 'Publish Survey' }}
+  </button>
+</div>
+  </div>
+</div>

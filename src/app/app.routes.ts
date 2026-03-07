@@ -22,6 +22,11 @@ export const routes: Routes = [
         path: 'manager',
         loadComponent: () => import('./features/dashboard/manager-dashboard/manager-dashboard.component').then(m => m.ManagerDashboardComponent)
       },
+      // ADD THIS NEW ROUTE HERE:
+      {
+        path: 'manager/create-survey',
+        loadComponent: () => import('./features/dashboard/manager-dashboard/survey-creation/survey-creation.component').then(m => m.SurveyCreateComponent)
+      },
       {
         path: 'admin',
         loadComponent: () => import('./features/dashboard/admin-dashboard/admin-dashboard.component').then(m => m.AdminDashboardComponent)

@@ -1,94 +1,66 @@
 <div class="survey-detail-page">
-  <!-- Header -->
   <div class="survey-header">
-    <button class="back-btn" (click)="goBack()">← Back to Dashboard</button>
-    <h1 class="survey-title">{{ survey?.title || 'Loading...' }}</h1>
+    <button class="back-btn" (click)="goBack()">← Back</button>
+    <h1 class="survey-title">{{ survey?.title || (isLoading ? 'Loading Survey...' : 'Survey Detail') }}</h1>
   </div>
 
-  <!-- Loading State -->
-  <div *ngIf="isLoading" class="loading-container">
-    <p>Loading survey...</p>
-  </div>
+  <div *ngIf="!isLoading; else loadingSpinner">
+    
+    <div *ngIf="error" class="error-box">
+      {{ error }}
+    </div>
 
-  <!-- Error State -->
-  <div *ngIf="error" class="error-message">
-    <p>{{ error }}</p>
-  </div>
-
-  <!-- Survey Content -->
-  <div *ngIf="!isLoading && survey" class="survey-container">
-    <!-- Survey Info Bar -->
-    <div class="survey-info-bar">
-      <div class="info-section">
+    <div *ngIf="survey" class="survey-container">
+      <div class="survey-info-bar">
         <p><strong>Description:</strong> {{ survey.description }}</p>
+        <p><strong>Ends:</strong> {{ formatDate(survey.endDate) }}</p>
       </div>
-      <div class="deadline-section">
-        <p><strong>Deadline:</strong> {{ formatDate(survey.endDate) }}</p>
-        <span *ngIf="isDeadlinePassed()" class="deadline-passed">⚠️ Deadline has passed</span>
-      </div>
-    </div>
 
-    <!-- Questions Section -->
-    <div class="questions-container">
-      <h2>Questions</h2>
+      <div class="questions-list">
+        <div *ngFor="let question of survey.questions; let i = index" class="question-card">
+          <h3>{{ i + 1 }}. {{ question.text }}</h3>
 
-      <div *ngFor="let question of survey?.questions; let i = index" class="question-item">
-        <h3>{{ i + 1 }}. {{ question.text }}</h3>
+          <div *ngIf="question.type === 'MCQ'" class="options">
+  <label *ngFor="let option of question.options" class="radio-label">
+    <input type="radio" 
+           [name]="'q' + question.questionId" 
+           [value]="option.text" 
+           (change)="updateAnswer(question.questionId, option.text)">
+    <span>{{ option.text }}</span> </label>
+</div>
 
-        <!-- MCQ Question -->
-        <div *ngIf="question.type === 'MCQ'" class="question-content">
-          <div class="option-group">
-            <label *ngFor="let option of question.options" class="option-label">
-              <input
-                type="radio"
-                [name]="'question_' + question.questionId"
-                [value]="option.optionText"
-                (change)="updateAnswer(question.questionId, option.optionText)"
-              />
-              <span>{{ option.optionText }}</span>
+          <div *ngIf="question.type === 'RATING'" class="rating">
+            <label *ngFor="let r of [1,2,3,4,5]">
+              <input type="radio" [name]="'q' + question.questionId" 
+                     (change)="updateAnswer(question.questionId, r.toString())">
+              {{ r }} ⭐
             </label>
           </div>
-        </div>
 
-        <!-- Rating Question -->
-        <div *ngIf="question.type === 'RATING'" class="question-content">
-          <div class="rating-group">
-            <label *ngFor="let rating of [1, 2, 3, 4, 5]" class="rating-label">
-              <input
-                type="radio"
-                [name]="'question_' + question.questionId"
-                [value]="rating.toString()"
-                (change)="updateAnswer(question.questionId, rating.toString())"
-              />
-              <span class="rating-star">{{ '⭐'.repeat(rating) }}</span>
-            </label>
+          <div *ngIf="question.type === 'TEXT'">
+            <textarea class="text-ans" (input)="updateAnswer(question.questionId, $any($event.target).value)"></textarea>
           </div>
         </div>
-
-        <!-- Text Question -->
-        <div *ngIf="question.type === 'TEXT'" class="question-content">
-          <textarea
-            class="text-input"
-            placeholder="Enter your response..."
-            [value]="getAnswer(question.questionId)"
-            (change)="updateAnswer(question.questionId, $any($event).target.value)"
-          ></textarea>
-        </div>
       </div>
-    </div>
 
-    <!-- Submit Button -->
-    <div class="submit-section">
-      <button
-        class="submit-btn"
-        (click)="submitSurvey()"
-        [disabled]="!areAllQuestionsAnswered() || isSubmitting || isDeadlinePassed()"
-      >
-        {{ isSubmitting ? 'Submitting...' : 'Submit Survey' }}
-      </button>
-      <p *ngIf="!areAllQuestionsAnswered()" class="info-text">
-        ⚠️ Please answer all questions to submit
-      </p>
+      <div class="footer-actions">
+        <div style="color: #fbbf24; font-size: 12px; margin-bottom: 10px;">
+            Debug: Answered {{ answers.size }} of {{ survey?.questions?.length }} questions.
+        </div>
+
+        <button class="submit-btn" 
+            [disabled]="!areAllQuestionsAnswered() || isSubmitting || isDeadlinePassed()"
+            (click)="submitSurvey()">
+         {{ isSubmitting ? 'Sending...' : 'Submit Responses' }}
+        </button>
+      </div>
     </div>
   </div>
+
+  <ng-template #loadingSpinner>
+    <div class="loading-overlay">
+      <div class="spinner"></div>
+      <p>Loading Survey Questions...</p>
+    </div>
+  </ng-template>
 </div>

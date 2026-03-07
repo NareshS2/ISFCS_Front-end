@@ -119,6 +119,13 @@ export class AdminService {
     );
   }
 
+  // Add this inside your AdminService class
+    getPendingApprovalSurveys(page: number = 0, size: number = 50): Observable<Survey[]> {
+        return this.http.get<ApiResponse<PaginationResponse<Survey>>>(`${API_URL}/surveys/pending-approval?page=${page}&size=${size}`).pipe(
+        map(response => response.data?.content || [])
+        );
+    }
+
   // Get survey by ID
   getSurveyById(id: number): Observable<Survey> {
     return this.http.get<ApiResponse<Survey>>(`${API_URL}/surveys/${id}`).pipe(

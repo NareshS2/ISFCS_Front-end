@@ -1,0 +1,119 @@
+.create-survey-page {
+  background: #0f0f1e;
+  min-height: 100vh;
+  color: white;
+  padding: 40px;
+}
+
+/* NEW: Back Button Styling */
+.back-btn {
+  background: rgba(139, 92, 246, 0.15);
+  color: #a78bfa;
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+}
+
+.back-btn:hover {
+  background: #8b5cf6;
+  color: white;
+  transform: translateX(-5px);
+}
+
+.form-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.form-section, .question-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  padding: 25px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #a78bfa;
+}
+
+input[type="text"], textarea, input[type="datetime-local"], input[type="number"] {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid #444;
+  padding: 12px;
+  border-radius: 8px;
+  color: white;
+  margin-bottom: 15px;
+  font-family: inherit;
+}
+
+input:focus {
+  outline: none;
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
+}
+
+.question-card {
+  border-left: 5px solid #8b5cf6;
+}
+
+.q-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  color: #a78bfa;
+  font-weight: bold;
+}
+
+.add-buttons button {
+  background: #8b5cf6;
+  border: none;
+  color: white;
+  padding: 8px 15px;
+  margin-left: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.add-buttons button:hover {
+  background: #7c3aed;
+}
+
+/* MODIFIED: Spacing between questions and publish button */
+.actions {
+  margin-top: 50px; /* Added significant padding here */
+  padding-bottom: 40px;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 18px;
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  border: none;
+  color: white;
+  font-weight: bold;
+  font-size: 1.1rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+}
+
+.submit-btn:disabled {
+  background: #4b5563;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
